@@ -1,0 +1,14 @@
+# NetBeans / Ant build output
+/build/
+/dist/
+/nbproject/private/
+*.class
+
+# Local customer records (may contain personal data)
+/customers.txt
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
