@@ -17,6 +17,47 @@ public class CustomerFrame extends javax.swing.JFrame {
      */
     public CustomerFrame() {
         initComponents();
+        configureResponsiveLayout();
+        setMinimumSize(new java.awt.Dimension(520, 380));
+        setLocationRelativeTo(null);
+    }
+
+    private void configureResponsiveLayout() {
+        txtPhone.setText("");
+        jButton1.setText("CONTINUE");
+
+        javax.swing.JPanel form = new javax.swing.JPanel(new java.awt.GridBagLayout());
+        java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.weightx = 1.0;
+        gbc.insets = new java.awt.Insets(8, 8, 8, 8);
+        gbc.anchor = java.awt.GridBagConstraints.CENTER;
+
+        gbc.gridy = 0;
+        form.add(jLabel2, gbc);
+
+        gbc.gridy = 1;
+        gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gbc.insets = new java.awt.Insets(0, 48, 8, 48);
+        form.add(txtPhone, gbc);
+
+        gbc.gridy = 2;
+        gbc.fill = java.awt.GridBagConstraints.NONE;
+        gbc.insets = new java.awt.Insets(12, 8, 8, 8);
+        form.add(jLabel3, gbc);
+
+        gbc.gridy = 3;
+        gbc.insets = new java.awt.Insets(16, 8, 8, 8);
+        form.add(jButton1, gbc);
+
+        getContentPane().removeAll();
+        getContentPane().setLayout(new java.awt.BorderLayout(12, 12));
+        ((javax.swing.JComponent) getContentPane()).setBorder(
+                javax.swing.BorderFactory.createEmptyBorder(20, 24, 20, 24));
+
+        jLabel1.setFont(jLabel1.getFont().deriveFont(java.awt.Font.BOLD, 18f));
+        getContentPane().add(jLabel1, java.awt.BorderLayout.NORTH);
+        getContentPane().add(form, java.awt.BorderLayout.CENTER);
     }
 
     /**
@@ -115,11 +156,7 @@ public class CustomerFrame extends javax.swing.JFrame {
         return;
     }
 
-    BillFrame bill = new BillFrame(phone);
-
-    bill.setVisible(true);
-
-    this.dispose();
+    WindowNavigator.open(this, new BillFrame(phone));
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**

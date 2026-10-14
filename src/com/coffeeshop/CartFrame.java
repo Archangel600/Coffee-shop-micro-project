@@ -18,7 +18,10 @@ public class CartFrame extends javax.swing.JFrame {
      */
     public CartFrame() {
         initComponents();
-         model = (DefaultTableModel) jTable1.getModel();
+        configureResponsiveLayout();
+        setMinimumSize(new java.awt.Dimension(680, 500));
+        setLocationRelativeTo(null);
+        model = (DefaultTableModel) jTable1.getModel();
 
     model.setColumnIdentifiers(new Object[]{
         "ITEM",
@@ -131,6 +134,30 @@ public class CartFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void configureResponsiveLayout() {
+        javax.swing.JPanel buttonBar = new javax.swing.JPanel(
+                new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 24, 8));
+        buttonBar.add(jButton1);
+        buttonBar.add(jButton2);
+        buttonBar.add(jButton3);
+
+        javax.swing.JPanel footer = new javax.swing.JPanel(new java.awt.BorderLayout(8, 8));
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        footer.add(jLabel2, java.awt.BorderLayout.NORTH);
+        footer.add(buttonBar, java.awt.BorderLayout.SOUTH);
+
+        getContentPane().removeAll();
+        getContentPane().setLayout(new java.awt.BorderLayout(12, 12));
+        ((javax.swing.JComponent) getContentPane()).setBorder(
+                javax.swing.BorderFactory.createEmptyBorder(16, 20, 16, 20));
+
+        jLabel1.setFont(jLabel1.getFont().deriveFont(java.awt.Font.BOLD, 18f));
+        getContentPane().add(jLabel1, java.awt.BorderLayout.NORTH);
+        getContentPane().add(jScrollPane2, java.awt.BorderLayout.CENTER);
+        getContentPane().add(footer, java.awt.BorderLayout.SOUTH);
+    }
+
     private void loadCart() {
 
     model.setRowCount(0);
@@ -161,19 +188,11 @@ public class CartFrame extends javax.swing.JFrame {
         return;
     }
 
-    CustomerFrame customer = new CustomerFrame();
-
-    customer.setVisible(true);
-
-    this.dispose();
+    WindowNavigator.open(this, new CustomerFrame());
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        MenuFrame menu = new MenuFrame();
-
-    menu.setVisible(true);
-
-    this.dispose();
+        WindowNavigator.open(this, new MenuFrame());
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
