@@ -19,10 +19,42 @@ public class BillFrame extends javax.swing.JFrame {
     public BillFrame(String phone) {
 
     initComponents();
+    configureResponsiveLayout();
+    setMinimumSize(new java.awt.Dimension(560, 520));
+    setLocationRelativeTo(null);
 
     this.phone = phone;
 
     generateBill();
+}
+
+private void configureResponsiveLayout() {
+    txtBill.setEditable(false);
+
+    javax.swing.JPanel summary = new javax.swing.JPanel(new java.awt.GridLayout(4, 1, 6, 6));
+    summary.add(lblSubtotal);
+    summary.add(lblDiscount);
+    summary.add(lblFinal);
+    summary.add(lblOffer);
+
+    javax.swing.JPanel center = new javax.swing.JPanel(new java.awt.BorderLayout(8, 8));
+    center.add(lblPhone, java.awt.BorderLayout.NORTH);
+    center.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+    center.add(summary, java.awt.BorderLayout.SOUTH);
+
+    javax.swing.JPanel footer = new javax.swing.JPanel(
+            new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 12, 8));
+    footer.add(btnNewOrder);
+
+    getContentPane().removeAll();
+    getContentPane().setLayout(new java.awt.BorderLayout(12, 12));
+    ((javax.swing.JComponent) getContentPane()).setBorder(
+            javax.swing.BorderFactory.createEmptyBorder(16, 20, 16, 20));
+
+    jLabel1.setFont(jLabel1.getFont().deriveFont(java.awt.Font.BOLD, 18f));
+    getContentPane().add(jLabel1, java.awt.BorderLayout.NORTH);
+    getContentPane().add(center, java.awt.BorderLayout.CENTER);
+    getContentPane().add(footer, java.awt.BorderLayout.SOUTH);
 }
 private void generateBill() {
 
@@ -201,11 +233,7 @@ private void generateBill() {
 
     Cart.clearCart();
 
-    MenuFrame menu = new MenuFrame();
-
-    menu.setVisible(true);
-
-    this.dispose();
+    WindowNavigator.open(this, new MenuFrame());
     }//GEN-LAST:event_btnNewOrderActionPerformed
 
 
