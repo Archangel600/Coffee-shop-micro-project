@@ -19,6 +19,26 @@ public class Cart {
         items.add(new CartItem(name, price));
     }
 
+    public static void increaseQuantity(int index) {
+        if (index >= 0 && index < items.size()) {
+            items.get(index).increaseQuantity();
+        }
+    }
+
+    public static void decreaseQuantity(int index) {
+        if (index < 0 || index >= items.size()) {
+            return;
+        }
+
+        CartItem item = items.get(index);
+
+        if (item.getQuantity() <= 1) {
+            items.remove(index);
+        } else {
+            item.decreaseQuantity();
+        }
+    }
+
     public static void removeItem(int index) {
 
         if (index >= 0 && index < items.size()) {

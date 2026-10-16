@@ -28,6 +28,12 @@ public class CartItem {
         quantity++;
     }
 
+    public void decreaseQuantity() {
+        if (quantity > 1) {
+            quantity--;
+        }
+    }
+
     public double getTotal() {
         return price * quantity;
     }
