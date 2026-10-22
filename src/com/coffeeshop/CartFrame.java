@@ -17,7 +17,7 @@ import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 
 /**
- * Cart screen with a responsive layout and a type-safe table model.
+ * Cart screen with a responsive layout and quantity controls.
  */
 public class CartFrame extends JFrame {
 
@@ -74,22 +74,42 @@ public class CartFrame extends JFrame {
         JScrollPane scrollPane = new JScrollPane(table);
         root.add(scrollPane, BorderLayout.CENTER);
 
+        JButton minusButton = new JButton("−");
+        JButton plusButton = new JButton("+");
         JButton removeButton = new JButton("REMOVE ITEM");
         JButton backButton = new JButton("BACK TO MENU");
         JButton continueButton = new JButton("CONTINUE");
 
+        minusButton.setToolTipText("Decrease selected item quantity");
+        plusButton.setToolTipText("Increase selected item quantity");
+        minusButton.setFont(minusButton.getFont().deriveFont(Font.BOLD, 18f));
+        plusButton.setFont(plusButton.getFont().deriveFont(Font.BOLD, 18f));
+        minusButton.setPreferredSize(new Dimension(54, 34));
+        plusButton.setPreferredSize(new Dimension(54, 34));
+
+        minusButton.addActionListener(event -> changeSelectedQuantity(-1));
+        plusButton.addActionListener(event -> changeSelectedQuantity(1));
         removeButton.addActionListener(event -> removeSelectedItem());
         backButton.addActionListener(event -> WindowNavigator.open(this, new MenuFrame()));
         continueButton.addActionListener(event -> continueToCustomer());
 
-        JPanel buttonBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 24, 8));
-        buttonBar.add(removeButton);
-        buttonBar.add(backButton);
-        buttonBar.add(continueButton);
+        JPanel quantityBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 4));
+        quantityBar.add(new JLabel("QUANTITY:"));
+        quantityBar.add(minusButton);
+        quantityBar.add(plusButton);
+
+        JPanel actionBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 24, 8));
+        actionBar.add(removeButton);
+        actionBar.add(backButton);
+        actionBar.add(continueButton);
+
+        JPanel controls = new JPanel(new BorderLayout(8, 4));
+        controls.add(quantityBar, BorderLayout.NORTH);
+        controls.add(actionBar, BorderLayout.SOUTH);
 
         JPanel footer = new JPanel(new BorderLayout(8, 8));
         footer.add(totalLabel, BorderLayout.NORTH);
-        footer.add(buttonBar, BorderLayout.SOUTH);
+        footer.add(controls, BorderLayout.SOUTH);
         root.add(footer, BorderLayout.SOUTH);
     }
 
@@ -115,6 +135,29 @@ public class CartFrame extends JFrame {
         return "₹" + String.format("%.2f", value);
     }
 
+    private void changeSelectedQuantity(int change) {
+        int selectedRow = table.getSelectedRow();
+
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select an item first.");
+            return;
+        }
+
+        if (change > 0) {
+            Cart.increaseQuantity(selectedRow);
+        } else {
+            Cart.decreaseQuantity(selectedRow);
+        }
+
+        loadCart();
+
+        if (!Cart.items.isEmpty()) {
+            int rowToSelect = Math.min(selectedRow, Cart.items.size() - 1);
+            table.setRowSelectionInterval(rowToSelect, rowToSelect);
+            table.scrollRectToVisible(table.getCellRect(rowToSelect, 0, true));
+        }
+    }
+
     private void removeSelectedItem() {
         int selectedRow = table.getSelectedRow();
 
@@ -125,6 +168,11 @@ public class CartFrame extends JFrame {
 
         Cart.removeItem(selectedRow);
         loadCart();
+
+        if (!Cart.items.isEmpty()) {
+            int rowToSelect = Math.min(selectedRow, Cart.items.size() - 1);
+            table.setRowSelectionInterval(rowToSelect, rowToSelect);
+        }
     }
 
     private void continueToCustomer() {
