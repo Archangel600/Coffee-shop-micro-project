@@ -65,7 +65,7 @@ private void generateBill() {
     txtBill.setText("");
     for (OrderService.BillLine line : receipt.lines()) {
         txtBill.append(line.name() + "   x" + line.quantity()
-                + "   ₹" + line.total().toPlainString() + "\\n");
+                + "   ₹" + line.total().toPlainString() + "\n");
     }
 
     if (receipt.redeemed()) {
