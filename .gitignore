@@ -12,3 +12,7 @@
 Thumbs.db
 .vscode/
 .idea/
+
+# Local MySQL credentials and downloaded JDBC driver
+/db.properties
+/lib/*.jar

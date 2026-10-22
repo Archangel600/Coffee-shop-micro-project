@@ -7,6 +7,11 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -48,45 +53,20 @@ public class MenuFrame extends JFrame {
         menuGrid.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         root.add(menuGrid, BorderLayout.CENTER);
 
-        addCategory("SNACKS",
-                item("Samosa", 20),
-                item("Sandwich", 60),
-                item("French Fries", 70));
-
-        addCategory("COFFEE",
-                item("Espresso", 80),
-                item("Cappuccino", 100),
-                item("Latte", 110));
-
-        addCategory("TEA",
-                item("Black Tea", 30),
-                item("Green Tea", 40),
-                item("Milk Tea", 40));
-
-        addCategory("LIME DRINK",
-                item("Lime Juice", 40),
-                item("Mint Lime", 50),
-                item("Fresh Lime", 40));
-
-        addCategory("SOFT DRINKS",
-                item("Coke", 50),
-                item("Sprite", 50),
-                item("Pepsi", 50));
-
-        addCategory("ICE CREAM",
-                item("Vanilla Ice Cream", 60),
-                item("Chocolate Ice Cream", 70),
-                item("Strawberry Ice Cream", 70));
-
-        addCategory("BURGERS",
-                item("Veg Burger", 90),
-                item("Cheese Burger", 120),
-                item("Chicken Burger", 150));
-
-        addCategory("DESSERTS",
-                item("Brownie", 80),
-                item("Cake", 90),
-                item("Donut", 50));
+        try {
+            Map<String, List<MenuDAO.MenuItem>> categories = new LinkedHashMap<>();
+            for (MenuDAO.MenuItem item : MenuDAO.loadMenu()) {
+                categories.computeIfAbsent(item.category(), key -> new ArrayList<>())
+                        .add(item);
+            }
+            for (Map.Entry<String, List<MenuDAO.MenuItem>> category : categories.entrySet()) {
+                addCategory(category.getKey(),
+                        category.getValue().toArray(new MenuDAO.MenuItem[0]));
+            }
+        } catch (SQLException exception) {
+            throw new IllegalStateException("Could not load the menu from MySQL: "
+                    + exception.getMessage(), exception);
+        }
 
         JButton viewCart = new JButton("VIEW CART");
         viewCart.addActionListener(e -> WindowNavigator.open(this, new CartFrame()));
@@ -104,7 +84,7 @@ public class MenuFrame extends JFrame {
         });
     }
 
-    private void addCategory(String titleText, MenuItem... items) {
+    private void addCategory(String titleText, MenuDAO.MenuItem... items) {
         JPanel category = new JPanel(new BorderLayout(8, 8));
         category.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createEtchedBorder(),
@@ -115,7 +95,7 @@ public class MenuFrame extends JFrame {
         category.add(title, BorderLayout.NORTH);
 
         JPanel buttons = new JPanel(new GridLayout(items.length, 1, 6, 6));
-        for (MenuItem menuItem : items) {
+        for (MenuDAO.MenuItem menuItem : items) {
             JButton button = new JButton(menuItem.name());
             button.addActionListener(e -> addToCart(menuItem));
             buttons.add(button);
@@ -125,7 +105,7 @@ public class MenuFrame extends JFrame {
         menuGrid.add(category);
     }
 
-    private void addToCart(MenuItem menuItem) {
+    private void addToCart(MenuDAO.MenuItem menuItem) {
         Cart.addItem(menuItem.name(), menuItem.price());
         JOptionPane.showMessageDialog(this, menuItem.name() + " added to cart!");
     }
@@ -142,13 +122,6 @@ public class MenuFrame extends JFrame {
         }
     }
 
-    private static MenuItem item(String name, double price) {
-        return new MenuItem(name, price);
-    }
-
-    private record MenuItem(String name, double price) {
-    }
-
     public static void main(String[] args) {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -161,6 +134,13 @@ public class MenuFrame extends JFrame {
             logger.log(java.util.logging.Level.SEVERE, null, ex);
         }
 
-        java.awt.EventQueue.invokeLater(() -> new MenuFrame().setVisible(true));
+        java.awt.EventQueue.invokeLater(() -> {
+            try {
+                new MenuFrame().setVisible(true);
+            } catch (IllegalStateException exception) {
+                JOptionPane.showMessageDialog(null, exception.getMessage(),
+                        "Database Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
     }
 }
