@@ -296,7 +296,7 @@ try {
 
     Write-Host ""
     Write-Host "Starting Coffee Shop..." -ForegroundColor Cyan
-    & java -Dsun.java2d.noddraw=true -Dsun.java2d.d3d=false -Dsun.java2d.opengl=false -Dsun.java2d.pmoffscreen=false -cp "$outDir;$libDir\*" com.coffeeshop.MenuFrame
+    & java -cp "$outDir;$libDir\*" com.coffeeshop.MenuFrame
     $exitCode = $LASTEXITCODE
 } finally {
     Stop-MySqlServicesStartedByCoffee
