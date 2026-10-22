@@ -1,58 +1,49 @@
 # Coffee Billing System
 
-A Java Swing coffee shop ordering and billing application built with NetBeans/Ant and MySQL JDBC.
+A Java Swing coffee-shop ordering and billing project using **MySQL JDBC**.
+The original NetBeans/Ant project and existing Menu → Cart → Customer → Bill flow are preserved.
 
-## Requirements
+## Run after a fresh clone (Windows / VS Code)
 
-- JDK 26 (configured in `nbproject/project.properties`)
-- Apache NetBeans with Java SE and Ant support
-- MySQL Server 8.0+ (MySQL Workbench is optional)
-- MySQL Connector/J JDBC driver
+**Only prerequisites:** MySQL Server installed locally and a JDK (17+ for this launcher).
+You do **not** need to install MySQL Connector/J yourself or execute SQL in Workbench.
 
-## One-time setup on each computer
+1. Install MySQL Server if it is not already installed. Know the MySQL username/password (typically `root` and the password you chose when installing MySQL).
+2. From the repository root, double-click `run.bat` or run `.\run.bat` in a Windows PowerShell terminal.
+3. On first launch, enter the MySQL user/password at the prompts. The password is hidden. If incorrect, you can retry.
+4. The launcher automatically downloads **MySQL Connector/J 9.7.0** into `lib/mysql-connector-j.jar`, compiles the Java sources, verifies the MySQL login, initializes the `coffee_shop` database, four tables, and original 24 menu products, then opens the app.
+5. On future launches the driver is reused. Credentials are stored in Git-ignored `.coffee-db.json` encrypted for the current Windows user.
 
-1. Install and start MySQL Server. In MySQL Workbench, open `database/schema.sql` and execute the complete script using a MySQL administrator account. This creates the `coffee_shop` database, four tables and the 24 existing menu products. Running the script again will not delete orders.
-2. Recommended: create a local database account in MySQL with:
-   ```sql
-   CREATE USER IF NOT EXISTS 'coffee_app'@'localhost' IDENTIFIED BY 'your_password';
-   GRANT SELECT, INSERT, UPDATE ON coffee_shop.* TO 'coffee_app'@'localhost';
-   ```
-   Change `your_password` to a password you choose. Alternatively, use an existing local MySQL account.
-3. Copy `db.properties.example` to `db.properties` in the project root. Set `db.user` and `db.password` to your MySQL credentials. For a non-default server, also edit `db.url`.
-4. Download **MySQL Connector/J** from [MySQL's official Connector/J download page](https://dev.mysql.com/downloads/connector/j/). Extract its JAR, create a `lib` directory under the project root, and copy/rename the JAR to `lib/mysql-connector-j.jar` (exact filename).
-5. Open the project folder containing `build.xml` in NetBeans, select JDK 26, then **Clean and Build** → **Run**. The main class is `com.coffeeshop.MenuFrame`.
+Internet is needed for the first JDBC-driver download. MySQL Server itself must still be installed; the launcher can start a stopped local MySQL Windows service (it may request administrator permission) and will stop only services it started when the app closes.
 
-`db.properties` (credentials) and `lib/*.jar` are intentionally ignored by Git. Each machine running the project needs access to MySQL, the JDBC driver, and its own configuration file. Run the application with the project folder as its working directory.
+Change saved credentials using `.\run.bat -ResetDbConfig`.
 
-## Existing application flow
+The launcher accepts optional `COFFEE_DB_USER`, `COFFEE_DB_PASSWORD`, `COFFEE_DB_URL`, and `COFFEE_DB_SERVER_URL` environment variables, which override saved/default settings. By default, the connection is `localhost:3306` and database name `coffee_shop`. The database login must have permission to create the schema/tables on first use (a local MySQL `root` login works for a classroom demonstration).
 
-`Menu → Cart → Customer Registration → Bill → New Order`
+## NetBeans / Ant
 
-- Menu categories, products and prices load from MySQL.
-- The cart remains in memory while an order is being prepared.
-- Enter a 10-digit phone number and press **CONTINUE** to save the customer, order, line items and loyalty count in one JDBC transaction.
-- The bill appears only if checkout succeeds; a database error keeps the cart intact and allows retry.
-- Every fifth completed order receives **30% off**, then its loyalty cycle starts again.
-- Completed orders and loyalty counts persist across restarts.
+The existing `build.xml`, `nbproject/`, and `.form` files are unchanged. Its configured Java language level remains **JDK 26**.
 
-## Database tables
+To use NetBeans:
+1. First run `run.bat` at least once to download `lib/mysql-connector-j.jar`.
+2. Since NetBeans Run does not inherit the launcher's temporary environment variables, copy `db.properties.example` to `db.properties` and enter your local credentials. This file is Git-ignored.
+3. Open the project folder in NetBeans and **Clean and Build → Run** with JDK 26.
 
-- `menu_items`: available products, categories, prices and their display order
-- `customers`: unique phone number and loyalty progress (0–4)
-- `orders`: customer, totals, discount and order timestamp
-- `order_items`: quantities and historical purchase prices
+Alternatively, use `run.bat` for routine launches from the project root without creating `db.properties`.
 
-The previous `customers.txt` file is no longer used. Existing local loyalty records do **not** migrate automatically; migrate them separately if there is important historical data.
+## Data
 
-## Source layout
+- `menu_items`: the original categories and 24 product prices, read from MySQL.
+- `customers`: phone number and progress toward the next fifth-order offer.
+- `orders`: completed bills and discounts.
+- `order_items`: product names, prices, and quantities at purchase.
 
-- `src/com/coffeeshop/MenuFrame.java`: database-backed menu and existing Swing layout
-- `src/com/coffeeshop/MenuDAO.java`: JDBC menu queries
-- `src/com/coffeeshop/DatabaseConnection.java`: JDBC connection configuration
-- `src/com/coffeeshop/OrderService.java`: transactional checkout and loyalty logic
-- `src/com/coffeeshop/Cart.java`, `CartItem.java`, `CartFrame.java`: in-memory shopping cart
-- `src/com/coffeeshop/CustomerFrame.java`: checkout action
-- `src/com/coffeeshop/BillFrame.java`: displays the saved order
-- `database/schema.sql`: MySQL schema and initial menu data
+Pressing **CONTINUE** after entering a valid customer number commits the entire order, its lines, and the loyalty update in one JDBC transaction. The bill is shown only after a successful save. The 5th completed order receives 30% off. An unsuccessful checkout keeps the current cart. The previous `customers.txt` file is no longer used and is not automatically migrated.
 
-The existing NetBeans `.form` files are preserved for GUI Builder editing.
+`database/schema.sql` remains the canonical idempotent schema and menu seed, now executed automatically through JDBC. No unrelated screens or functionality were changed.
+
+## Compile-only launcher
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
+```

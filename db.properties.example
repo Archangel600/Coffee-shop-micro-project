@@ -1,4 +1,5 @@
-# Copy this file to db.properties, then enter credentials for your local MySQL server.
-db.url=jdbc:mysql://localhost:3306/coffee_shop
-db.user=coffee_app
-db.password=CHANGE_ME
+# Optional for running directly in NetBeans without the run.bat launcher.
+# The Windows launcher prompts for credentials and does not need this file.
+db.url=jdbc:mysql://localhost:3306/coffee_shop?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+db.user=root
+db.password=YOUR_MYSQL_PASSWORD
