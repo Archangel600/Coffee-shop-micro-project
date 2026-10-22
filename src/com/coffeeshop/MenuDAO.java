@@ -16,6 +16,7 @@ final class MenuDAO {
     }
 
     static List<MenuItem> loadMenu() throws SQLException {
+        DatabaseConnection.initializeDatabase();
         String sql = "SELECT category, name, price FROM menu_items ORDER BY display_order, item_id";
         List<MenuItem> menu = new ArrayList<>();
         try (Connection connection = DatabaseConnection.open();
@@ -27,7 +28,7 @@ final class MenuDAO {
             }
         }
         if (menu.isEmpty()) {
-            throw new SQLException("Menu is empty. Run database/schema.sql to seed the menu.");
+            throw new SQLException("Menu is empty. Check the MySQL menu_items table.");
         }
         return menu;
     }

@@ -16,3 +16,7 @@ Thumbs.db
 # Local MySQL credentials and downloaded JDBC driver
 /db.properties
 /lib/*.jar
+
+# VRMS-style Windows launcher output and encrypted local credentials
+/out/
+/.coffee-db.json
