@@ -1,0 +1,4 @@
+# Copy this file to db.properties, then enter credentials for your local MySQL server.
+db.url=jdbc:mysql://localhost:3306/coffee_shop
+db.user=coffee_app
+db.password=CHANGE_ME

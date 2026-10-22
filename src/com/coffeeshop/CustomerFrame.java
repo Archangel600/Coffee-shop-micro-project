@@ -156,7 +156,32 @@ public class CustomerFrame extends javax.swing.JFrame {
         return;
     }
 
-    WindowNavigator.open(this, new BillFrame(phone));
+    jButton1.setEnabled(false);
+    new javax.swing.SwingWorker<OrderService.Receipt, Void>() {
+        @Override
+        protected OrderService.Receipt doInBackground() throws Exception {
+            return OrderService.checkout(phone, Cart.items);
+        }
+
+        @Override
+        protected void done() {
+            try {
+                WindowNavigator.open(CustomerFrame.this, new BillFrame(get()));
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+                jButton1.setEnabled(true);
+                JOptionPane.showMessageDialog(CustomerFrame.this,
+                        "Checkout was interrupted.", "Database Error",
+                        JOptionPane.ERROR_MESSAGE);
+            } catch (java.util.concurrent.ExecutionException exception) {
+                jButton1.setEnabled(true);
+                Throwable cause = exception.getCause();
+                JOptionPane.showMessageDialog(CustomerFrame.this,
+                        "Order could not be saved: " + cause.getMessage(),
+                        "Database Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }.execute();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**

@@ -9,21 +9,20 @@ import javax.swing.JOptionPane;
  * @author ayush
  */
 public class BillFrame extends javax.swing.JFrame {
-    private final String phone;
-    private boolean redeemed;
+    private final OrderService.Receipt receipt;
 
     /**
      * Creates new form BillFrame
-     * @param phone
+     * @param receipt
      */
-    public BillFrame(String phone) {
+    public BillFrame(OrderService.Receipt receipt) {
 
     initComponents();
     configureResponsiveLayout();
     setMinimumSize(new java.awt.Dimension(560, 520));
     setLocationRelativeTo(null);
 
-    this.phone = phone;
+    this.receipt = receipt;
 
     generateBill();
 }
@@ -57,76 +56,23 @@ private void configureResponsiveLayout() {
     getContentPane().add(footer, java.awt.BorderLayout.SOUTH);
 }
 private void generateBill() {
-
-    double subtotal = Cart.getTotal();
-
-    boolean fifthOrder =
-            LoyaltyManager.isFifthOrder(phone);
-
-    double discount = 0;
-
-    if (fifthOrder) {
-        
-        discount = subtotal * 0.30;
-
-        redeemed = true;
-
-        JOptionPane.showMessageDialog(this, """
-                                                    Congratulations!
-                                                             You have completed your 5th order.
-                                                    30% Loyalty Discount Redeemed Successfully!""",
-                "Loyalty Offer",
-                JOptionPane.INFORMATION_MESSAGE
-        );
-
-    } else {
-        
-        redeemed = false;
-    }
-
-    double finalAmount = subtotal - discount;
-
-    lblPhone.setText(
-            "Customer Phone: " + phone
-    );
-
-    lblSubtotal.setText(
-            "Subtotal: ₹" +
-            String.format("%.2f", subtotal)
-    );
-
-    lblDiscount.setText(
-            "Loyalty Discount: ₹" +
-            String.format("%.2f", discount)
-    );
-
-    lblFinal.setText(
-            "FINAL AMOUNT: ₹" +
-            String.format("%.2f", finalAmount)
-    );
-
-    lblOffer.setText(
-            "★ On every 5th order 30% OFF ★"
-    );
+    lblPhone.setText("Customer Phone: " + receipt.phone());
+    lblSubtotal.setText("Subtotal: ₹" + receipt.subtotal().toPlainString());
+    lblDiscount.setText("Loyalty Discount: ₹" + receipt.discount().toPlainString());
+    lblFinal.setText("FINAL AMOUNT: ₹" + receipt.finalAmount().toPlainString());
+    lblOffer.setText("★ On every 5th order 30% OFF ★");
 
     txtBill.setText("");
-
-    for (CartItem item : Cart.items) {
-
-        txtBill.append(
-                item.getName()
-                + "   x"
-                + item.getQuantity()
-                + "   ₹"
-                + String.format("%.2f", item.getTotal())
-                + "\n"
-        );
+    for (OrderService.BillLine line : receipt.lines()) {
+        txtBill.append(line.name() + "   x" + line.quantity()
+                + "   ₹" + line.total().toPlainString() + "\n");
     }
 
-    LoyaltyManager.completeOrder(
-            phone,
-            redeemed
-    );
+    if (receipt.redeemed()) {
+        JOptionPane.showMessageDialog(this,
+                "Congratulations! Your 5th order earned a 30% loyalty discount.",
+                "Loyalty Offer", JOptionPane.INFORMATION_MESSAGE);
+    }
 }
    
 
@@ -233,7 +179,12 @@ private void generateBill() {
 
     Cart.clearCart();
 
-    WindowNavigator.open(this, new MenuFrame());
+    try {
+        WindowNavigator.open(this, new MenuFrame());
+    } catch (IllegalStateException exception) {
+        JOptionPane.showMessageDialog(this, exception.getMessage(),
+                "Database Error", JOptionPane.ERROR_MESSAGE);
+    }
     }//GEN-LAST:event_btnNewOrderActionPerformed
 
 

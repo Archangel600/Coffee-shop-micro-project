@@ -1,70 +1,58 @@
 # Coffee Billing System
 
-A Java Swing desktop application for a coffee shop ordering and billing workflow, built as an Apache NetBeans project.
-
-## Features
-
-- Menu-based ordering across coffee, tea, snacks, soft drinks, lime drinks, ice cream, burgers, and desserts.
-- Shopping cart with quantity aggregation, item removal, and total calculation.
-- Customer phone-number validation before checkout.
-- Bill generation with item quantities, subtotal, loyalty discount, and final amount.
-- Simple loyalty system that awards **30% off on every 5th order**.
-- Local persistence of loyalty order counts in `customers.txt`.
-
-## Project structure
-
-```text
-.
-├── src/com/coffeeshop/
-│   ├── MenuFrame.java
-│   ├── MenuFrame.form
-│   ├── Cart.java
-│   ├── CartItem.java
-│   ├── CartFrame.java
-│   ├── CartFrame.form
-│   ├── CustomerFrame.java
-│   ├── CustomerFrame.form
-│   ├── LoyaltyManager.java
-│   ├── BillFrame.java
-│   └── BillFrame.form
-├── nbproject/
-├── build.xml
-├── manifest.mf
-├── .gitignore
-└── README.md
-```
+A Java Swing coffee shop ordering and billing application built with NetBeans/Ant and MySQL JDBC.
 
 ## Requirements
 
-- **JDK 26** (the NetBeans project is configured with source/target level 26)
-- Apache NetBeans with Java SE support
-- Apache Ant (normally provided/integrated by NetBeans)
+- JDK 26 (configured in `nbproject/project.properties`)
+- Apache NetBeans with Java SE and Ant support
+- MySQL Server 8.0+ (MySQL Workbench is optional)
+- MySQL Connector/J JDBC driver
 
-## Run in NetBeans
+## One-time setup on each computer
 
-1. Clone or download this repository.
-2. In Apache NetBeans, choose **File → Open Project**.
-3. Select the repository folder containing `build.xml`.
-4. Make sure the project uses **JDK 26**.
-5. Choose **Clean and Build**, then **Run**.
+1. Install and start MySQL Server. In MySQL Workbench, open `database/schema.sql` and execute the complete script using a MySQL administrator account. This creates the `coffee_shop` database, four tables and the 24 existing menu products. Running the script again will not delete orders.
+2. Recommended: create a local database account in MySQL with:
+   ```sql
+   CREATE USER IF NOT EXISTS 'coffee_app'@'localhost' IDENTIFIED BY 'your_password';
+   GRANT SELECT, INSERT, UPDATE ON coffee_shop.* TO 'coffee_app'@'localhost';
+   ```
+   Change `your_password` to a password you choose. Alternatively, use an existing local MySQL account.
+3. Copy `db.properties.example` to `db.properties` in the project root. Set `db.user` and `db.password` to your MySQL credentials. For a non-default server, also edit `db.url`.
+4. Download **MySQL Connector/J** from [MySQL's official Connector/J download page](https://dev.mysql.com/downloads/connector/j/). Extract its JAR, create a `lib` directory under the project root, and copy/rename the JAR to `lib/mysql-connector-j.jar` (exact filename).
+5. Open the project folder containing `build.xml` in NetBeans, select JDK 26, then **Clean and Build** → **Run**. The main class is `com.coffeeshop.MenuFrame`.
 
-The configured main class is:
+`db.properties` (credentials) and `lib/*.jar` are intentionally ignored by Git. Each machine running the project needs access to MySQL, the JDBC driver, and its own configuration file. Run the application with the project folder as its working directory.
 
-```text
-com.coffeeshop.MenuFrame
-```
+## Existing application flow
 
-## Application flow
+`Menu → Cart → Customer Registration → Bill → New Order`
 
-```text
-Menu → Cart → Customer Registration → Bill → New Order
-```
+- Menu categories, products and prices load from MySQL.
+- The cart remains in memory while an order is being prepared.
+- Enter a 10-digit phone number and press **CONTINUE** to save the customer, order, line items and loyalty count in one JDBC transaction.
+- The bill appears only if checkout succeeds; a database error keeps the cart intact and allows retry.
+- Every fifth completed order receives **30% off**, then its loyalty cycle starts again.
+- Completed orders and loyalty counts persist across restarts.
 
-The loyalty manager stores completed-order counts locally. On a customer's 5th order, the billing screen applies a 30% discount and resets the loyalty cycle for subsequent orders.
+## Database tables
 
-## Repository notes
+- `menu_items`: available products, categories, prices and their display order
+- `customers`: unique phone number and loyalty progress (0–4)
+- `orders`: customer, totals, discount and order timestamp
+- `order_items`: quantities and historical purchase prices
 
-- NetBeans GUI Builder `.form` files are included so the Swing forms remain editable in NetBeans.
-- Generated `build/` and `dist/` directories are ignored because they can be regenerated.
-- `nbproject/private/` is ignored because it contains machine-specific NetBeans settings.
-- `customers.txt` is ignored because it is runtime data and may contain customer phone numbers.
+The previous `customers.txt` file is no longer used. Existing local loyalty records do **not** migrate automatically; migrate them separately if there is important historical data.
+
+## Source layout
+
+- `src/com/coffeeshop/MenuFrame.java`: database-backed menu and existing Swing layout
+- `src/com/coffeeshop/MenuDAO.java`: JDBC menu queries
+- `src/com/coffeeshop/DatabaseConnection.java`: JDBC connection configuration
+- `src/com/coffeeshop/OrderService.java`: transactional checkout and loyalty logic
+- `src/com/coffeeshop/Cart.java`, `CartItem.java`, `CartFrame.java`: in-memory shopping cart
+- `src/com/coffeeshop/CustomerFrame.java`: checkout action
+- `src/com/coffeeshop/BillFrame.java`: displays the saved order
+- `database/schema.sql`: MySQL schema and initial menu data
+
+The existing NetBeans `.form` files are preserved for GUI Builder editing.
